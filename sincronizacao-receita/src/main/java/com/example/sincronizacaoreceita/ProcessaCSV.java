@@ -1,13 +1,13 @@
 package com.example.sincronizacaoreceita;
 
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,18 +15,90 @@ import java.util.List;
 import java.util.Map;
 
 
-public class ProcessaCSV {
+public abstract class ProcessaCSV {
 
-    @Autowired
-    private ReceitaService receitaService;
+    public static void exportarArquivoExcel(List<InformacaoConta> informacoesAtualizadas) throws IOException {
+        Workbook workbook = new XSSFWorkbook();
 
-    public void enviarAtualizacao(Map<Integer, List<String>> dadosProcessados) throws InterruptedException {
-        for (int i = 1; i < dadosProcessados.size(); i++) {
-            InformacaoConta informacaoConta = convertToObject(dadosProcessados.get(i));
-            boolean resultado = receitaService.atualizarConta(informacaoConta.getAgencia(),
-                    informacaoConta.getConta(), informacaoConta.getSaldo(), informacaoConta.getStatus());
-            informacaoConta.setResultado(resultado);
+        Sheet sheet = workbook.createSheet("Resultado");
+        sheet.setColumnWidth(0, 6000);
+        sheet.setColumnWidth(1, 4000);
+
+        Row header = sheet.createRow(0);
+        createHeaderCell(header, workbook);
+        createCell(workbook, sheet, informacoesAtualizadas);
+
+        String home = System.getProperty("user.home");
+        File currDir = new File(home + "/Downloads/temp.xlsx");
+        String path = currDir.getAbsolutePath();
+
+        FileOutputStream outputStream = new FileOutputStream(path);
+        workbook.write(outputStream);
+        workbook.close();
+    }
+
+    private static void createCell(Workbook workbook, Sheet sheet, List<InformacaoConta> informacoesAtualizadas) {
+        CellStyle style = workbook.createCellStyle();
+        style.setWrapText(true);
+
+        int count = 2;
+       for (InformacaoConta info : informacoesAtualizadas) {
+
+            Row row = sheet.createRow(count);
+            Cell cell = row.createCell(0);
+            cell.setCellValue(info.getAgencia());
+            cell.setCellStyle(style);
+
+            cell = row.createCell(1);
+            cell.setCellValue(info.getConta());
+            cell.setCellStyle(style);
+
+            cell = row.createCell(2);
+            cell.setCellValue(info.getSaldo());
+            cell.setCellStyle(style);
+
+            cell = row.createCell(3);
+            cell.setCellValue(info.getStatus());
+            cell.setCellStyle(style);
+
+            cell = row.createCell(4);
+            cell.setCellValue(info.isResultado());
+            cell.setCellStyle(style);
+
+            count++;
         }
+    }
+
+    private static void createHeaderCell(Row header, Workbook workbook) {
+        CellStyle headerStyle = workbook.createCellStyle();
+        headerStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
+        headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+        XSSFFont font = ((XSSFWorkbook) workbook).createFont();
+        font.setFontName("Arial");
+        font.setFontHeightInPoints((short) 16);
+        font.setBold(true);
+        headerStyle.setFont(font);
+
+        Cell headerCell = header.createCell(0);
+        headerCell.setCellValue("agencia");
+        headerCell.setCellStyle(headerStyle);
+
+        headerCell = header.createCell(1);
+        headerCell.setCellValue("conta");
+        headerCell.setCellStyle(headerStyle);
+
+        headerCell = header.createCell(2);
+        headerCell.setCellValue("saldo");
+        headerCell.setCellStyle(headerStyle);
+
+        headerCell = header.createCell(3);
+        headerCell.setCellValue("status");
+        headerCell.setCellStyle(headerStyle);
+
+        headerCell = header.createCell(4);
+        headerCell.setCellValue("resultado");
+        headerCell.setCellStyle(headerStyle);
     }
 
     public static InformacaoConta convertToObject(List<String> dados) {
