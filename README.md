@@ -14,7 +14,7 @@ Classe responsável por testar o servico da Receita.
 
 1. Fazer o download do arquivo sincronizacao-receita-0.0.1-SNAPSHOT.jar e do arquivo.xlsx no mesmo diretório.
 2. Executar o comando:  java -jar sincronizacao-receita-0.0.1-SNAPSHOT.jar arquivo.xlsx no terminal.
-3. Um arquivo excel com o nome temp.xlsx será baixado dentro da pasta Donwloads.
+3. Um arquivo excel com o nome temp.xlsx será exportado para dentro da pasta Donwloads.
 
 
 
